@@ -1,0 +1,1 @@
+/home/ruslana/Client_Client_Server_Application__Qt/build/Desktop_Qt_6_6_3_GCC_64bit-Debug/appClient_Client_Server_Application__Qt_autogen/include/../EWIEGA46WW/moc_client.cpp.json

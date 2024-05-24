@@ -1,0 +1,5 @@
+module Client_Client_Server_Application__Qt
+typeinfo appClient_Client_Server_Application__Qt.qmltypes
+prefer :/Client_Client_Server_Application__Qt/
+Main 1.0 Main.qml
+

@@ -2,7 +2,7 @@
 
 Client::Client(QObject *parent)
     : QObject(parent), tcpSocket(new QTcpSocket(this)), m_host(""), m_port(0), status(false) {
-    timeoutTimer = new QTimer(this);
+    timeoutTimer = new QTimer(this); // it is good that you use garbage collector of QT, but it is better to use smart pointers
     timeoutTimer->setSingleShot(true);
     connect(timeoutTimer, &QTimer::timeout, this, &Client::connectionTimeout);
 
@@ -44,7 +44,7 @@ void Client::closeConnection() {
 }
 
 void Client::sendSignal(int pid, int signal) {
-    if (kill(static_cast<pid_t>(pid), signal) == -1) {
+    if (kill(static_cast<pid_t>(pid), signal) == -1) { // it should be a logic of server
         qDebug() << "Error with" << pid << ":" << strerror(errno);
     } else {
         qDebug() << "Closed process with PID:" << pid;
@@ -104,12 +104,14 @@ void Client::handleReadyRead() {
         }
 
         QString response;
-        in >> response;
+        in >> response;// read exactly blockSize bytes
 
         qDebug() << "Received response from server:" << response;
 
+
+        // Implement messages instead of using simple QString
         if (response.startsWith("process_list ")) {
-            QString processListData = response.mid(13);
+            QString processListData = response.mid(13); // sizeof("process_list ")
             QStringList processEntries = processListData.split(";");
             QList<QVariantMap> processList;
 
@@ -119,15 +121,15 @@ void Client::handleReadyRead() {
                     QVariantMap processMap;
                     processMap["pid"] = details.value(0);
                     processMap["processName"] = details.value(1);
-                    processMap["args"] = details.value(2);
+                    processMap["args"] = details.value(2); // make sure that details has 3 occurences
                     processList.append(processMap);
                 } else {
                     qDebug() << "Invalid process entry:" << entry;
                 }
             }
 
-            QVariantList variantProcessList;
-            for (const QVariantMap &process : processList) {
+            QVariantList variantProcessList;    // implement model to avoid having data in processList and duplication of it into qvariantList
+            for (const QVariantMap &process : processList) { // write directly to variantProcessList
                 variantProcessList.append(process);
             }
 
@@ -163,7 +165,7 @@ void Client::handleError(QAbstractSocket::SocketError socketError) {
 }
 
 QString Client::host() const { return m_host; }
-void Client::setHost(const QString &hostAddress) { m_host = hostAddress; emit hostChanged(); }
+void Client::setHost(const QString &hostAddress) { m_host = hostAddress; emit hostChanged(); } // if m_host != hostAddress
 
 int Client::port() const { return m_port; }
 void Client::setPort(int portNumber) { m_port = portNumber; emit portChanged(); }

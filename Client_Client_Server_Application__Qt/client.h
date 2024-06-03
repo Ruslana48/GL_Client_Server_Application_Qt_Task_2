@@ -1,3 +1,5 @@
+#pragma once
+
 #include <QObject>
 #include <QTcpSocket>
 #include <QTimer>
@@ -6,6 +8,7 @@
 #include <unistd.h>
 #include <csignal>
 
+// good
 class Client : public QObject {
     Q_OBJECT
     Q_PROPERTY(QString host READ host WRITE setHost NOTIFY hostChanged)
@@ -23,10 +26,10 @@ public:
     void setPort(int portNumber);
 
     bool getStatus() const;
-    QString statusText() const;
+    QString statusText() const; // good
 
     Q_INVOKABLE void connectToServer();
-    Q_INVOKABLE void requestProcessList(const QString &typeOfProcess, const int &pid);
+    Q_INVOKABLE void requestProcessList(const QString &typeOfProcess, const int &pid); // pass pid by copy
     Q_INVOKABLE void sendSignal(int pid, int signal);
     Q_INVOKABLE void closeProcess(const QString &pid);
     Q_INVOKABLE void closeConnection();

@@ -1,0 +1,106 @@
+{
+    "classes": [
+        {
+            "className": "Server",
+            "methods": [
+                {
+                    "access": "public",
+                    "arguments": [
+                        {
+                            "name": "ip",
+                            "type": "QString"
+                        },
+                        {
+                            "name": "port",
+                            "type": "int"
+                        }
+                    ],
+                    "name": "startServer",
+                    "returnType": "void"
+                },
+                {
+                    "access": "public",
+                    "name": "stopServer",
+                    "returnType": "void"
+                }
+            ],
+            "object": true,
+            "qualifiedClassName": "Server",
+            "signals": [
+                {
+                    "access": "public",
+                    "name": "smbConnected",
+                    "returnType": "void"
+                },
+                {
+                    "access": "public",
+                    "name": "smbDisconnected",
+                    "returnType": "void"
+                },
+                {
+                    "access": "public",
+                    "arguments": [
+                        {
+                            "name": "processList",
+                            "type": "QString"
+                        }
+                    ],
+                    "name": "processListUpdated",
+                    "returnType": "void"
+                },
+                {
+                    "access": "public",
+                    "arguments": [
+                        {
+                            "name": "message",
+                            "type": "QString"
+                        }
+                    ],
+                    "name": "gotNewMessage",
+                    "returnType": "void"
+                },
+                {
+                    "access": "public",
+                    "arguments": [
+                        {
+                            "name": "status",
+                            "type": "QString"
+                        }
+                    ],
+                    "name": "processClosed",
+                    "returnType": "void"
+                }
+            ],
+            "slots": [
+                {
+                    "access": "private",
+                    "name": "newConnection",
+                    "returnType": "void"
+                },
+                {
+                    "access": "private",
+                    "name": "readClientRequest",
+                    "returnType": "void"
+                },
+                {
+                    "access": "private",
+                    "name": "updateProcessList",
+                    "returnType": "void"
+                },
+                {
+                    "access": "private",
+                    "name": "gotDisconnection",
+                    "returnType": "void"
+                }
+            ],
+            "superClasses": [
+                {
+                    "access": "public",
+                    "name": "QObject"
+                }
+            ]
+        }
+    ],
+    "inputFile": "server.h",
+    "outputRevision": 68
+}

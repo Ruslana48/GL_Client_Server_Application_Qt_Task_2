@@ -2,7 +2,7 @@
 
 Server::Server(QObject *parent)
     : QObject(parent), tcpServer(new QTcpServer(this)), updateTimer(new QTimer(this)), m_nNextBlockSize(0) {
-    connect(tcpServer, &QTcpServer::newConnection, this, &Server::newConnection);
+    connect(tcpServer, &QTcpServer::newConnection, this, &Server::newConnection); // add disconnect
     connect(updateTimer, &QTimer::timeout, this, &Server::updateProcessList);
     updateTimer->start(10000);
 }
@@ -21,18 +21,18 @@ void Server::stopServer() {
             sendToClient(client, "0");
             client->disconnectFromHost();
             if (client->state() != QAbstractSocket::UnconnectedState) {
-                client->waitForDisconnected();
+                client->waitForDisconnected(); // Not sure we need to wait, but if so separate for should be added.
             }
         }
         clients.clear();
         tcpServer->close();
         qDebug() << "Server stopped";
     } else {
-        qDebug() << "Error! Server was not running";
+        qDebug() << "Error! Server was not running"; // It is not an error. need to use qError()
     }
 }
 
-QList<QTcpSocket *> Server::getClients() {
+QList<QTcpSocket *> Server::getClients() { // need to be const
     return clients;
 }
 
@@ -70,18 +70,21 @@ void Server::readClientRequest() {
         }
 
         QString request;
-        in >> request;
+        in >> request; // read exactly m_nNextBlockSize
         m_nNextBlockSize = 0;
 
         emit gotNewMessage(request);
         qDebug() << "Read request: " << request.size();
 
+        // request == Messages::req_proc_list
         if (request == "request_process_list") {
+            // request_process_list();
+            // separate function
             QTimer *timer = new QTimer(this);
             connect(timer, &QTimer::timeout, this, [this]() {
                 std::vector<ProcessInfo> processList = getProcessList();
                 QString serializedProcessList;
-                for (const ProcessInfo& process : processList) {
+                for (const ProcessInfo& process : processList) { // Send Messages instead
                     serializedProcessList += QString::fromStdString(process.pid) + "," +
                                              QString::fromStdString(process.command) + ";";
                 }
@@ -103,7 +106,7 @@ void Server::readClientRequest() {
             }
 
             bool success = closeProcess(pid);
-            sendToClient(clientSocket, QString("process_closed %1").arg(success ? "success" : "failure"));
+            sendToClient(clientSocket, QString("process_closed %1").arg(success ? "success" : "failure")); // reply = success ? "success" : "failure"
             emit processClosed(success ? "success" : "failure");
         }
     }
@@ -130,14 +133,15 @@ std::vector<ProcessInfo> Server::getProcessList() {
         return processList;
     }
 
-    QStringList processDirs = procDir.entryList(QDir::Dirs | QDir::NoDotAndDotDot);
+    QStringList processDirs = procDir.entryList(QDir::Dirs | QDir::NoDotAndDotDot); // Use std::filesystem instead
 
     for (const QString &pid : processDirs) {
         bool ok;
         int pidNumber = pid.toInt(&ok);
+        // if !ok continue;
         if (ok) {
             QFile cmdlineFile("/proc/" + pid + "/cmdline");
-            if (cmdlineFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            if (cmdlineFile.open(QIODevice::ReadOnly | QIODevice::Text)) { // if !open continue;
                 QTextStream in(&cmdlineFile);
                 QString command = in.readAll().trimmed();
 
@@ -146,7 +150,7 @@ std::vector<ProcessInfo> Server::getProcessList() {
                 if (!command.isEmpty()) {
                     processList.push_back({pid.toStdString(), command.toStdString()});
                 }
-                cmdlineFile.close();
+                cmdlineFile.close();// will be closed automatically
             }
         }
     }
@@ -164,7 +168,7 @@ bool Server::closeProcess(const QString &pidStr) {
     bool ok;
     qint64 pidNumber = pidStr.toLongLong(&ok);
     qDebug() << "pid" << pidStr;
-    if (ok) {
+    if (ok) { // if !ok
         if (kill(static_cast<pid_t>(pidNumber), SIGTERM) == -1) {
             qDebug() << "Error closing process with PID" << pidNumber << ":" << strerror(errno);
             return false;
@@ -184,7 +188,7 @@ qint64 Server::sendToClient(QTcpSocket *socket, const QString &str) {
     out << quint16(0) << str;
 
     out.device()->seek(0);
-    out << quint16(arrBlock.size() - sizeof(quint16));
+    out << quint16(arrBlock.size() - sizeof(quint16)); // Can we exceed int16?
     qDebug() << "Sending to client: " << str.size();
     return socket->write(arrBlock);
 }
